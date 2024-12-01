@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "GlyphicaXbox": {
+      "commandName": "MsixPackage"
+    }
+  }
+}
