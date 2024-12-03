@@ -47,8 +47,6 @@ main()
 async function main()
 {
 	await Version.initialize()
-	//window.chrome.webview.postMessage(result)
-	//WebView_CoreWebView2WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e){string message = e.TryGetWebMessageAsString();if (message.StartsWith("my result start")){MessageBox.Show("my result");}}
 
 	// use event handling to intercept errors originating inside the Sphere sandbox, rather than a
 	// try-catch.  otherwise the debugger thinks the error is handled and doesn't do a breakpoint,
@@ -75,7 +73,5 @@ function reportException(thrownValue)
 		msg = thrownValue.stack.replace(/\r?\n/g, '<br>')
 	else
 		msg = String(thrownValue)
-	const readout = document.getElementById('readout')
-	readout.classList.add('visible')
-	readout.innerHTML = `an error occurred.\r\n\r\n${msg}`
+	print(msg)
 }
