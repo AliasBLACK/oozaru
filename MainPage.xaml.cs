@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using System.Runtime.InteropServices;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -27,7 +28,10 @@ namespace OozaruXbox
     {
         public MainPage()
         {
-            Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--autoplay-policy=no-user-gesture-required");
+            Environment.SetEnvironmentVariable(
+                variable: "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+                value: "--autoplay-policy=no-user-gesture-required"
+            );
             InitializeComponent();
             InitWebView();
         }
@@ -36,9 +40,9 @@ namespace OozaruXbox
         {
             await WebView2.EnsureCoreWebView2Async();
             WebView2.CoreWebView2.SetVirtualHostNameToFolderMapping(
-                "oozaru",
-                "Assets\\oozaru",
-                CoreWebView2HostResourceAccessKind.Allow
+                hostName: "oozaru",
+                folderPath: "Assets\\oozaru",
+                accessKind: CoreWebView2HostResourceAccessKind.Allow
             );
             WebView2.CoreWebView2.WebMessageReceived += (s, e) =>
             {
