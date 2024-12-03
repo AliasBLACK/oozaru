@@ -27,6 +27,7 @@ namespace OozaruXbox
     {
         public MainPage()
         {
+            Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--autoplay-policy=no-user-gesture-required");
             InitializeComponent();
             InitWebView();
         }
@@ -39,6 +40,10 @@ namespace OozaruXbox
                 "Assets\\oozaru",
                 CoreWebView2HostResourceAccessKind.Allow
             );
+            WebView2.CoreWebView2.WebMessageReceived += (s, e) =>
+            {
+                Debug.WriteLine(e.TryGetWebMessageAsString());
+            };
             WebView2.CoreWebView2.Navigate("http://oozaru/index.html");
         }
     }
