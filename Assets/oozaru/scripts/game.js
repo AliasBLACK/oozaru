@@ -100,10 +100,7 @@ class Game
 	static async launch()
 	{
 		document.title = `${Game.manifest.name} - ${Version.engine}`;
-		document.getElementById('gameTitle').innerHTML = Game.manifest.name;
-		document.getElementById('copyright').innerHTML = `game by ${Game.manifest.author}`;
-
-		Galileo.rerez(Game.manifest.resolution.x, Game.manifest.resolution.y);
+		Galileo.rerez(window.innerWidth, window.innerHeight);
 
 		// load and execute the game's main module.  if it exports a startup
 		// function or class, call it.
