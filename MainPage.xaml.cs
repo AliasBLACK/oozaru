@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Runtime.InteropServices;
+using Windows.UI.ViewManagement;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -28,6 +29,7 @@ namespace OozaruXbox
     {
         public MainPage()
         {
+            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
             Environment.SetEnvironmentVariable(
                 variable: "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
                 value: "--autoplay-policy=no-user-gesture-required"
