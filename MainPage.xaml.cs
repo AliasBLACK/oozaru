@@ -33,10 +33,12 @@ namespace OozaruXbox
                 value: "--autoplay-policy=no-user-gesture-required"
             );
             InitializeComponent();
+
+            #pragma warning disable 4014
             InitWebView();
         }
 
-        protected async Task InitWebView()
+        private async Task InitWebView()
         {
             await WebView2.EnsureCoreWebView2Async();
             WebView2.CoreWebView2.SetVirtualHostNameToFolderMapping(
