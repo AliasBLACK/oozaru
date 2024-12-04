@@ -48,7 +48,11 @@ namespace OozaruXbox
             );
             WebView2.CoreWebView2.WebMessageReceived += (s, e) =>
             {
-                Debug.WriteLine(e.TryGetWebMessageAsString());
+                var msg = e.TryGetWebMessageAsString()
+                    .Replace("http://oozaru", "Assets/oozaru")
+                    .Split("<br>");
+                foreach (var item in msg)
+                    Debug.WriteLine(item);
             };
             WebView2.CoreWebView2.Navigate("http://oozaru/index.html");
         }
