@@ -441,6 +441,7 @@ class Keyboard
 	static clearQueue()
 	{
 		keyQueue.length = 0;
+		charQueue.length = 0;
 	}
 
 	static getKey()
