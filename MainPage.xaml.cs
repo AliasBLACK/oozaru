@@ -17,6 +17,10 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Runtime.InteropServices;
 using Windows.UI.ViewManagement;
+using Windows.Gaming.Input;
+using Windows.System;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Text;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -27,6 +31,104 @@ namespace OozaruXbox
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private bool _ready = false;
+
+        static private string ConvertVirtualKeyToJS(VirtualKey key)
+        {
+            switch (key)
+            {
+                case VirtualKey.Left: return "ArrowLeft";
+                case VirtualKey.Right: return "ArrowRight";
+                case VirtualKey.Down: return "ArrowDown";
+                case VirtualKey.Up: return "ArrowUp";
+                case VirtualKey.Back: return "Backspace";
+                case VirtualKey.Delete: return "Delete";
+                case VirtualKey.End: return "End";
+                case VirtualKey.Enter: return "Enter";
+                case VirtualKey.Escape: return "Escape";
+                case VirtualKey.F1: return "F1";
+                case VirtualKey.F2: return "F2";
+                case VirtualKey.F3: return "F3";
+                case VirtualKey.F4: return "F4";
+                case VirtualKey.F5: return "F5";
+                case VirtualKey.F6: return "F6";
+                case VirtualKey.F7: return "F7";
+                case VirtualKey.F8: return "F8";
+                case VirtualKey.F9: return "F9";
+                case VirtualKey.F10: return "F10";
+                case VirtualKey.F11: return "F11";
+                case VirtualKey.F12: return "F12";
+                case VirtualKey.Home: return "Home";
+                case VirtualKey.Insert: return "Insert";
+                case VirtualKey.PageDown: return "PageDown";
+                case VirtualKey.PageUp: return "PageUp";
+                case VirtualKey.Tab: return "Tab";
+                case VirtualKey.LeftShift: return "ShiftLeft";
+                case VirtualKey.LeftControl: return "ControlLeft";
+                case VirtualKey.LeftMenu: return "AltLeft";
+                case VirtualKey.RightShift: return "ShiftRight";
+                case VirtualKey.RightControl: return "ControlRight";
+                case VirtualKey.RightMenu: return "AltRight";
+                default: return null;
+            }
+        }
+
+        static private string ConvertStringToJS(char value)
+        {
+            switch (value)
+            {
+                case '`': return "Backquote";
+                case '\\': return "Backslash";
+                case '[': return "BracketLeft";
+                case ']': return "BracketRight";
+                case ',': return "Comma'";
+                case '0': return "Digit0";
+                case '1': return "Digit1";
+                case '2': return "Digit2";
+                case '3': return "Digit3";
+                case '4': return "Digit4";
+                case '5': return "Digit5";
+                case '6': return "Digit6";
+                case '7': return "Digit7";
+                case '8': return "Digit8";
+                case '9': return "Digit9";
+                case '=': return "Equal";
+                case 'a': return "KeyA";
+                case 'b': return "KeyB";
+                case 'c': return "KeyC";
+                case 'd': return "KeyD";
+                case 'e': return "KeyE";
+                case 'f': return "KeyF";
+                case 'g': return "KeyG";
+                case 'h': return "KeyH";
+                case 'i': return "KeyI";
+                case 'j': return "KeyJ";
+                case 'k': return "KeyK";
+                case 'l': return "KeyL";
+                case 'm': return "KeyM";
+                case 'n': return "KeyN";
+                case 'o': return "KeyO";
+                case 'p': return "KeyP";
+                case 'q': return "KeyQ";
+                case 'r': return "KeyR";
+                case 's': return "KeyS";
+                case 't': return "KeyT";
+                case 'u': return "KeyU";
+                case 'v': return "KeyV";
+                case 'w': return "KeyW";
+                case 'x': return "KeyX";
+                case 'y': return "KeyY";
+                case 'z': return "KeyZ";
+                case '-': return "Minus";
+                case '.': return "Period";
+                case '\'': return "Quote";
+                case ';': return "Semicolon";
+                case '/': return "Slash";
+                case ' ': return "Space";
+                default: return null;
+            }
+        }
+
         public MainPage()
         {
             //ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
@@ -65,6 +167,7 @@ namespace OozaruXbox
                         // Game loaded event.
                         case "GameLoaded":
                             Debug.WriteLine("Event: GameLoaded");
+                            _ready = true;
                             break;
                     }
                 }
@@ -73,6 +176,39 @@ namespace OozaruXbox
 
             // Navigate to oozaru start page.
             WebView2.CoreWebView2.Navigate("http://oozaru/index.html");
+        }
+
+        private void Grid_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (_ready)
+            {
+                var JSChar = ConvertVirtualKeyToJS(e.Key);
+                if (JSChar != null)
+                    WebView2.CoreWebView2.ExecuteScriptAsync(@"
+                    document.getElementById(""screen"").dispatchEvent(
+                        new KeyboardEvent(""keydown"", { code: """ + JSChar + @""" })
+                    )
+                ");
+            }
+        }
+
+        private void Grid_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)
+        {
+            if (_ready && !System.Char.IsControl(args.Character))
+            {
+                var JSString = "";
+                var JSChar = ConvertStringToJS(args.Character);
+                if (JSChar != null)
+                    JSString += @"
+                        document.getElementById(""screen"").dispatchEvent(
+                            new KeyboardEvent(""keydown"", { code: """ + JSChar + @""" })
+                        )
+                    ";
+                WebView2.CoreWebView2.ExecuteScriptAsync(
+                    JSString + 
+                    "charQueue.push('" + args.Character + "')"
+                );
+            }
         }
     }
 }

@@ -148,6 +148,7 @@ const MouseKey =
 
 var buttonStates = {};
 var keyQueue = [];
+globalThis.charQueue = [];
 var keyStates = { '': false };
 var lastMouseX = undefined;
 var lastMouseY = undefined;
@@ -442,6 +443,11 @@ class Keyboard
 	static getKey()
 	{
 		return keyQueue.pop() ?? null;
+	}
+
+	static getChar()
+	{
+		return charQueue.pop() ?? null;
 	}
 
 	static isPressed(key)
