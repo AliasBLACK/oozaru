@@ -258,6 +258,9 @@ class InputEngine
 				case 'Slash': keyQueue.push(Key.Slash); break;
 				case 'Space': keyQueue.push(Key.Space); break;
 				case 'Tab': keyQueue.push(Key.Tab); break;
+				case 'ShiftLeft': keyQueue.push(Key.LShift); break;
+				case 'ControlLeft': keyQueue.push(Key.LCtrl); break;
+				case 'AltLeft': keyQueue.push(Key.AltGr); break;
 			}
 		});
 		canvas.addEventListener('keyup', e => {

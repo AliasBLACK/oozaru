@@ -63,12 +63,9 @@ namespace OozaruXbox
                 case VirtualKey.PageDown: return "PageDown";
                 case VirtualKey.PageUp: return "PageUp";
                 case VirtualKey.Tab: return "Tab";
-                case VirtualKey.LeftShift: return "ShiftLeft";
-                case VirtualKey.LeftControl: return "ControlLeft";
-                case VirtualKey.LeftMenu: return "AltLeft";
-                case VirtualKey.RightShift: return "ShiftRight";
-                case VirtualKey.RightControl: return "ControlRight";
-                case VirtualKey.RightMenu: return "AltRight";
+                case VirtualKey.Shift: return "ShiftLeft";
+                case VirtualKey.Control: return "ControlLeft";
+                case VirtualKey.Menu: return "AltLeft";
                 default: return null;
             }
         }
@@ -185,10 +182,10 @@ namespace OozaruXbox
                 var JSChar = ConvertVirtualKeyToJS(e.Key);
                 if (JSChar != null)
                     WebView2.CoreWebView2.ExecuteScriptAsync(@"
-                    document.getElementById(""screen"").dispatchEvent(
-                        new KeyboardEvent(""keydown"", { code: """ + JSChar + @""" })
-                    )
-                ");
+                        document.getElementById(""screen"").dispatchEvent(
+                            new KeyboardEvent(""keydown"", { code: """ + JSChar + @""" })
+                        )
+                    ");
             }
         }
 
