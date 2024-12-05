@@ -43,12 +43,17 @@ namespace OozaruXbox
 
         private async Task InitWebView()
         {
+            // Wait for initialization.
             await WebView2.EnsureCoreWebView2Async();
+
+            // Map oozaru folder to hostname.
             WebView2.CoreWebView2.SetVirtualHostNameToFolderMapping(
                 hostName: "oozaru",
                 folderPath: "Assets\\oozaru",
                 accessKind: CoreWebView2HostResourceAccessKind.Allow
             );
+
+            // Handle messages received from WebView2.
             WebView2.CoreWebView2.WebMessageReceived += (s, e) =>
             {
                 var msg = e.TryGetWebMessageAsString()
@@ -57,6 +62,8 @@ namespace OozaruXbox
                 foreach (var item in msg)
                     Debug.WriteLine(item);
             };
+
+            // Navigate to oozaru start page.
             WebView2.CoreWebView2.Navigate("http://oozaru/index.html");
         }
     }
