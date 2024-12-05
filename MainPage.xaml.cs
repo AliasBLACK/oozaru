@@ -203,7 +203,7 @@ namespace OozaruXbox
                     ";
                 WebView2.CoreWebView2.ExecuteScriptAsync(
                     JSString + 
-                    "charQueue.push('" + args.Character + "')"
+                    "charQueue.push('" + (args.Character == '\'' ? "\\" : "") + args.Character + "')"
                 );
             }
         }
