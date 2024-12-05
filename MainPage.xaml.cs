@@ -56,11 +56,19 @@ namespace OozaruXbox
             // Handle messages received from WebView2.
             WebView2.CoreWebView2.WebMessageReceived += (s, e) =>
             {
-                var msg = e.TryGetWebMessageAsString()
-                    .Replace("http://oozaru", "Assets/oozaru")
-                    .Split("<br>");
-                foreach (var item in msg)
-                    Debug.WriteLine(item);
+                var msg = e.TryGetWebMessageAsString();
+                if (msg.Contains("Event:"))
+                {
+                    msg = msg.Replace("Event:", "");
+                    switch(msg)
+                    {
+                        // Game loaded event.
+                        case "GameLoaded":
+                            Debug.WriteLine("Event: GameLoaded");
+                            break;
+                    }
+                }
+                else Debug.WriteLine(msg.Replace("http://oozaru", "Assets/oozaru"));
             };
 
             // Navigate to oozaru start page.

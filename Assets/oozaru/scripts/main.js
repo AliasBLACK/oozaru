@@ -39,7 +39,8 @@ import Version from './version.js'
 
 globalThis.print = function(string)
 {
-	window.chrome.webview.postMessage(string)
+	if (typeof string == "string")
+		window.chrome.webview.postMessage(string)
 }
 
 main()
@@ -64,14 +65,15 @@ async function main()
 	InputEngine.initialize(canvas)
 	Pegasus.initialize()
 	await Pegasus.launchGame('dist')
+	print("Event:GameLoaded")
 }
 
 function reportException(thrownValue)
 {
-	let msg
-	if (thrownValue instanceof Error && thrownValue.stack !== undefined)
-		msg = thrownValue.stack.replace(/\r?\n/g, '<br>')
-	else
-		msg = String(thrownValue)
-	print(msg)
+	print((
+			thrownValue instanceof Error
+			&& thrownValue.stack !== undefined
+		) ?
+			thrownValue.stack :
+			String(thrownValue))
 }
