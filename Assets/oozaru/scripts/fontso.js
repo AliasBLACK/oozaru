@@ -30,7 +30,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
 **/
 
-import { DataStream } from './data-stream.js';
+import { parseBMFont } from './bmfont.js';
 import Fido from './fido.js';
 import { Color, Shape, ShapeType, Texture } from './galileo.js';
 import Game from './game.js';
@@ -42,7 +42,7 @@ class Fontso
 {
     static async initialize()
     {
-		defaultFont = await Font.fromFile('#/default.rfn');
+		defaultFont = await Font.fromFile('#/default.fnt');
     }
 }
 
@@ -51,76 +51,45 @@ class Font
 {
 	#fileName;
 	#glyphAtlas;
-	#glyphData = [];
+	#glyphData = {};
 	#lineHeight = 0;
-	#maxWidth = 0;
-	#numGlyphs = 0;
-	#stride;
 
 	static get Default()
 	{
 		return defaultFont;
 	}
 
-	static async fromFile(fileName)
+	static async fromFile(...args)
 	{
+		const fileName = args.length > 1 ? `${args[0].split(".")[0]}_${args[1]}.fnt` : args[0];
 		const fontURL = Game.urlOf(fileName);
-		const fileData = await Fido.fetchData(fontURL);
-		const font = new Font(fileData);
-		font.#fileName = Game.fullPath(fileName);
-		return font;
-	}
+		let data = await Fido.fetchText(fontURL);
+		data = parseBMFont(data);
 
-	constructor(...args)
-	{
-		if (typeof args[0] === 'string') {
-			throw Error("'new Font' from filename is not supported");
-		}
-		else if (args[0] instanceof ArrayBuffer) {
-			let dataStream = new DataStream(args[0]);
-			let rfnHeader = dataStream.readStruct({
-				signature: 'string/4',
-				version:   'uint16-le',
-				numGlyphs: 'uint16-le',
-				reserved:  'reserve/248',
-			});
-			if (rfnHeader.signature !== '.rfn')
-				throw Error(`Unable to load RFN font file`);
-			if (rfnHeader.version < 2 || rfnHeader.version > 2)
-				throw Error(`Unsupported RFN version '${rfnHeader.version}'`);
-			if (rfnHeader.numGlyphs <= 0)
-				throw Error(`Malformed RFN font (no glyphs)`);
-			const numAcross = Math.ceil(Math.sqrt(rfnHeader.numGlyphs));
-			this.#stride = 1.0 / numAcross;
-			for (let i = 0; i < rfnHeader.numGlyphs; ++i) {
-				let charInfo = dataStream.readStruct({
-					width:    'uint16-le',
-					height:   'uint16-le',
-					reserved: 'reserve/28',
-				});
-				this.#lineHeight = Math.max(this.#lineHeight, charInfo.height);
-				this.#maxWidth = Math.max(this.#maxWidth, charInfo.width);
-				const pixelData = dataStream.readBytes(charInfo.width * charInfo.height * 4);
-				this.#glyphData.push({
-					width: charInfo.width,
-					height: charInfo.height,
-					u: i % numAcross / numAcross,
-					v: 1.0 - Math.floor(i / numAcross) / numAcross,
-					pixelData,
-				});
-			}
-			this.#glyphAtlas = new Texture(numAcross * this.#maxWidth, numAcross * this.#lineHeight);
-			this.#numGlyphs = rfnHeader.numGlyphs;
-			for (let i = 0; i < this.#numGlyphs; ++i) {
-				const glyph = this.#glyphData[i];
-				const x = i % numAcross * this.#maxWidth;
-				const y = Math.floor(i / numAcross) * this.#lineHeight;
-				this.#glyphAtlas.upload(glyph.pixelData, x, y, glyph.width, glyph.height);
-			}
-		}
-		else {
-			throw RangeError("Invalid argument(s) passed to 'new Font'.");
-		}
+		// Create font.
+		let font = new Font();
+		font.#lineHeight = data.common.lineHeight;
+		font.#fileName = Game.fullPath(fileName);
+
+		// Transcribe bmfont data.
+		for (const glyph of data.chars)
+			font.#glyphData[glyph.id] = {
+				width: glyph.width,
+				height: glyph.height,
+				xOffset: glyph.xoffset,
+				yOffset: glyph.yoffset,
+				xAdvance: glyph.xadvance,
+				u: glyph.x / data.common.scaleW,
+				v: 1.0 - glyph.y / data.common.scaleH,
+				u2: glyph.width / data.common.scaleW,
+				v2: glyph.height / data.common.scaleH
+			};
+
+		// Load texture.
+		font.#glyphAtlas = await Texture.fromFile(`#/${data.pages[0]}`);
+		
+		// Return font.
+		return font;
 	}
 
 	get fileName()
@@ -169,15 +138,10 @@ class Font
 	widthOf(text)
 	{
 		text = text.toString();
-		let cp;
-		let ptr = 0;
 		let width = 0;
-		while ((cp = text.codePointAt(ptr++)) !== undefined) {
-			if (cp > 0xFFFF)  // surrogate pair?
-				++ptr;
-			cp = toCP1252(cp);
-			if (cp >= this.#numGlyphs)
-				cp = 0x1A;
+		for (let ptr = 0; ptr < text.length; ptr++)
+		{
+			const cp = text.charCodeAt(ptr)
 			width += this.#glyphData[cp].width;
 		}
 		return width;
@@ -193,14 +157,9 @@ class Font
 		let lineFinished = false;
 		let wordWidth = 0;
 		let wordFinished = false;
-		let cp;
-		let ptr = 0;
-		while ((cp = text.codePointAt(ptr++)) !== undefined) {
-			if (cp > 0xFFFF)  // surrogate pair?
-				++ptr;
-			cp = toCP1252(cp);
-			if (cp >= this.#numGlyphs)
-				cp = 0x1A;
+		for (let ptr = 0; ptr < text.length; ptr++)
+		{
+			const cp = text.charCodeAt(ptr)
 			const glyph = this.#glyphData[cp];
 			switch (cp) {
 				case 13: case 10:  // newline
@@ -249,23 +208,18 @@ class Font
         y = Math.trunc(y);
         if (text === "")
 			return;  // empty string, nothing to render
-		let cp;
-		let ptr = 0;
 		let xOffset = 0;
 		const vertices = [];
-		while ((cp = text.codePointAt(ptr++)) !== undefined) {
-			if (cp > 0xFFFF)  // surrogate pair?
-				++ptr;
-			cp = toCP1252(cp);
-			if (cp >= this.#numGlyphs)
-				cp = 0x1A;
+		for (let ptr = 0; ptr < text.length; ptr++)
+		{
+			const cp = text.charCodeAt(ptr)
 			const glyph = this.#glyphData[cp];
-			const x1 = x + xOffset, x2 = x1 + glyph.width;
-			const y1 = y, y2 = y1 + glyph.height;
+			const x1 = x + xOffset + glyph.xOffset, x2 = x1 + glyph.width;
+			const y1 = y + glyph.yOffset, y2 = y1 + glyph.height;
 			const u1 = glyph.u;
-			const u2 = u1 + glyph.width / this.#maxWidth * this.#stride;
+			const u2 = u1 + glyph.u2;
 			const v1 = glyph.v;
-			const v2 = v1 - glyph.height / this.#lineHeight * this.#stride;
+			const v2 = v1 - glyph.v2;
 			vertices.push(
 				{ x: x1, y: y1, u: u1, v: v1, color },
 				{ x: x2, y: y1, u: u2, v: v1, color },
@@ -274,7 +228,7 @@ class Font
 				{ x: x1, y: y2, u: u1, v: v2, color },
 				{ x: x2, y: y2, u: u2, v: v2, color },
 			);
-			xOffset += glyph.width;
+			xOffset += glyph.xAdvance;
 		}
         Shape.drawImmediate(surface, ShapeType.Triangles, this.#glyphAtlas, vertices);
 	}
