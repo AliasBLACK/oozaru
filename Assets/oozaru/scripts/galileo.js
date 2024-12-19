@@ -93,7 +93,7 @@ class Galileo
 {
 	static async initialize(canvas)
 	{
-		const webGLContext = canvas.getContext('webgl', { alpha: false });
+		const webGLContext = canvas.getContext('webgl2', { alpha: false, antialias: false });
 		if (webGLContext === null)
 			throw Error(`Couldn't acquire a WebGL rendering context.`);
 		gl = webGLContext;
@@ -112,7 +112,7 @@ class Galileo
 		});
 
 		// TODO: see if there's a way to avoid needing a separate shader instance for flips.
-		backBuffer = new Surface(canvas.width, canvas.height);
+		backBuffer = new SurfaceRenderbuffer(canvas.width, canvas.height);
 		flipShader = defaultShader.clone();
 
 		Galileo.flip();
@@ -143,27 +143,17 @@ class Galileo
 
 	static flip()
 	{
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-		gl.scissor(0, 0, gl.canvas.width, gl.canvas.height);
-		gl.blendEquation(gl.FUNC_ADD);
-		gl.blendFunc(gl.ONE, gl.ZERO);
-		gl.depthFunc(gl.ALWAYS);
-		flipShader.activate(true);
-		backBuffer.useTexture(0);
-		Galileo.draw(ShapeType.TriStrip, new VertexList([
-			{ x: 0, y: 0, u: 0.0, v: 1.0 },
-			{ x: gl.canvas.width, y: 0, u: 1.0, v: 1.0 },
-			{ x: 0, y: gl.canvas.height, u: 0.0, v: 0.0 },
-			{ x: gl.canvas.width, y: gl.canvas.height, u: 1.0, v: 0.0 },
-		]));
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, backBuffer.frameBuffer);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+		gl.blitFramebuffer(
+			0, 0, gl.canvas.width, gl.canvas.height,
+			0, 0, gl.canvas.width, gl.canvas.height,
+			gl.COLOR_BUFFER_BIT, gl.LINEAR
+		);
 
 		activeSurface = null;
-		Surface.Screen.activate(defaultShader);
-		Surface.Screen.clipTo(0, 0, Surface.Screen.width, Surface.Screen.height, ClipOp.Reset);
-		gl.disable(gl.SCISSOR_TEST);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, backBuffer.frameBuffer);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		gl.enable(gl.SCISSOR_TEST);
 	}
 
 	static rerez(width, height)
@@ -1014,6 +1004,55 @@ class Texture
 	{
 		gl.activeTexture(gl.TEXTURE0 + textureUnit);
 		gl.bindTexture(gl.TEXTURE_2D, this.#glTexture);
+	}
+}
+
+export
+class SurfaceRenderbuffer
+{
+	#width;
+	#height;
+	#frameBuffer;
+
+	constructor(...args)
+	{
+		const width = args[0];
+		const height = args[1];
+		if (width < 1 || height < 1)
+			throw RangeError("A texture cannot be less than one pixel in size.");
+		this.#width = width;
+		this.#height = height;
+
+		const frameBuffer = gl.createFramebuffer();
+		const depthBuffer = gl.createRenderbuffer();
+		const colorBuffer = gl.createRenderbuffer();
+		if (frameBuffer === null || depthBuffer === null || colorBuffer == null)
+			throw Error(`Couldn't create a WebGL framebuffer object`);		
+
+		// in order to set up a new FBO we need to change the current framebuffer binding, so make sure
+		// it gets changed back afterwards.
+		const previousFBO = gl.getParameter(gl.FRAMEBUFFER_BINDING);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+		gl.bindRenderbuffer(gl.RENDERBUFFER, colorBuffer);
+		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, 8, gl.RGBA8, this.width, this.height);
+		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorBuffer);
+		gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, 4, gl.DEPTH_COMPONENT16, this.width, this.height);
+		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, previousFBO);
+		this.#frameBuffer = frameBuffer;
+	}
+
+	get height() { return this.#height; }
+	get width() { return this.#width; }
+	get frameBuffer() { return this.#frameBuffer; }
+
+	activate(shader, texture = null, transform = Transform.Identity)
+	{
+		if (this !== activeSurface) {
+			gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+			activeSurface = this;
+		}
 	}
 }
 
