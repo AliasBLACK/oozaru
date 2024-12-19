@@ -38,9 +38,16 @@ export { default as Prim } from './prim.js';
 export { default as Scene } from './scene.js';
 export { default as Task, default as Thread } from './task.js';
 export { default as Tween, Easing } from './tween.js';
+export { Node, Text } from './node.js';
 
 // Sphere Runtime shared modules
 export { default as DataStream } from './data-stream.js';
 export { default as from, Query } from './from.js';
 export { default as Logger } from './logger.js';
 export { default as Random } from './random.js';
+
+// 3rd party libraries.
+import { decomp } from './decomp.js';
+globalThis.decomp = decomp;
+export { Matter } from './matter.js';
+export { Yoga } from './yoga.js';
