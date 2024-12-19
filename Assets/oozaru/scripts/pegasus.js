@@ -36,6 +36,7 @@ import Fido from './fido.js';
 import { Font } from './fontso.js';
 import Game from './game.js';
 import Galileo, { BlendOp, Color, DepthOp, IndexList, Model, Shader, Shape, ShapeType, Surface, Texture, Transform, VertexList } from './galileo.js';
+import PrimNative from './primNative.js';
 import InputEngine, { Joystick, Key, Keyboard, Mouse, MouseKey } from './input-engine.js';
 import JobQueue, { Dispatch, JobToken, JobType } from './job-queue.js';
 import Version from './version.js';
@@ -101,6 +102,7 @@ class Pegasus
 			Texture,
 			Transform,
 			VertexList,
+			PrimNative
 		});
 	}
 
