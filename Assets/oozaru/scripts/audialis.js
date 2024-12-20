@@ -50,6 +50,8 @@ class Mixer
 	#audioContext;
 	#gainNode;
 	#panNode;
+	#attachedMixers = [];
+	#parent;
 
 	static get Default()
 	{
@@ -77,6 +79,11 @@ class Mixer
 		return this.#gainNode.gain.value;
 	}
 
+	get parent()
+	{
+		return this.#parent;
+	}
+
 	set pan(value)
 	{
 		this.#panNode.pan.value = value;
@@ -84,7 +91,14 @@ class Mixer
 
 	set volume(value)
 	{
+		if (this.parent)
+			value *= this.parent.volume
 		this.#gainNode.gain.value = value;
+	}
+
+	set parent(value)
+	{
+		this.#parent = value
 	}
 
 	attachAudio(audioElement)
@@ -100,6 +114,21 @@ class Mixer
 		node.onaudioprocess = (e) => callback(e.outputBuffer);
 		node.connect(this.#gainNode);
 		return node;
+	}
+
+	attachMixer(mixer)
+	{
+		if (mixer.parent != null)
+			mixer.parent.unattachMixer(mixer)
+		mixer.parent = this
+		this.#attachedMixers.push(mixer)
+	}
+
+	unattachMixer(mixer)
+	{
+		if (this.#attachedMixers.includes(mixer))
+			this.#attachedMixers.splice(this.#attachedMixers.indexOf(mixer), 1)
+		mixer.parent = null
 	}
 }
 
