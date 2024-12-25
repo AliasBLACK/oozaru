@@ -57,6 +57,8 @@ const FileOp =
 	Write: 2,
 };
 
+// Dropboxes for interop with C#.
+globalThis.DirectoryHelperDropbox = {};
 const console = globalThis.console;
 
 var mainObject;
@@ -104,7 +106,8 @@ class Pegasus
 			Texture,
 			Transform,
 			VertexList,
-			PrimNative
+			PrimNative,
+			DirectoryStream
 		});
 	}
 
@@ -352,6 +355,42 @@ class FileStream
 			throw Error(`The FileStream has already been disposed`);
 		throw Error(`'FileStream#write' is not yet implemented.`);
 	}
+}
+
+class DirectoryStream
+{
+	#directoryPath
+	#directoryContents
+	#position = 0
+
+	static async fromURL(path)
+	{
+		return new Promise(resolve => {
+			new Promise(directoryHelperPromise => {
+				DirectoryHelperDropbox[path] = directoryHelperPromise
+				print("DirectoryHelper:" + path)
+			}).then(result => {
+				delete DirectoryHelperDropbox[path]
+				let directoryStream = new DirectoryStream(result)
+				directoryStream.fileName = path
+				resolve(directoryStream)
+			})
+		})
+	}
+
+	constructor(contents)
+	{
+		if (typeof contents == "string")
+			throw RangeError(`'new DirectoryStream(path)' is not supported. Use DirectoryStream.fromURL(path) instead.`);
+		this.#directoryContents = contents
+	}
+
+	set fileName(value) { this.#directoryPath = value }
+	get fileName() { return this.#directoryPath }
+	get fileCount() { return this.#directoryContents.length }
+	get position() { return this.#position }
+	next() { return this.#position < this.fileCount ? { value: this.#directoryContents[this.#position++], done: false } : { done: true } }
+	rewind() { this.#position = 0 }
 }
 
 class SSj

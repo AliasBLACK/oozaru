@@ -154,7 +154,7 @@ namespace OozaruXbox
             );
 
             // Handle messages received from WebView2.
-            WebView2.CoreWebView2.WebMessageReceived += (s, e) =>
+            WebView2.CoreWebView2.WebMessageReceived += async (s, e) =>
             {
                 var msg = e.TryGetWebMessageAsString();
                 if (msg.Contains("Event:"))
@@ -169,11 +169,54 @@ namespace OozaruXbox
                             break;
                     }
                 }
+
+                // DirectoryStream
+                else if (msg.Contains("DirectoryHelper:"))
+                {
+                    msg = msg.Replace("DirectoryHelper:", "");
+                    StorageFolder folder = await getFolder(msg);
+                    IReadOnlyList<IStorageItem> items = await folder.GetItemsAsync();
+                    string result = "[";
+                    foreach (IStorageItem item in items)
+                    {
+                        result += "{";
+                        result += "isDirectory:" + (item.Name.Contains('.') ? "false" : "true") + ',';
+                        result += "fileName:\"" + item.Name + "\",";
+                        result += "fullPath:\"" + msg.TrimEnd(['/']) + "/" + item.Name + "\",";
+                        result += "extension:" + getExtension(item.Name);
+                        result += "},";
+                    }
+                    result = result.TrimEnd([',']);
+                    result += "]";
+                    WebView2.CoreWebView2.ExecuteScriptAsync("DirectoryHelperDropbox[\"" + msg + "\"](" + result + ")");
+                }
                 else Debug.WriteLine(msg.Replace("http://oozaru", "Assets/oozaru"));
             };
 
             // Navigate to oozaru start page.
             WebView2.CoreWebView2.Navigate("http://oozaru/index.html");
+        }
+
+        private static string getExtension(string path)
+        {
+            if (!path.Contains('.')) return null;
+            string[] parts = path.Split('.');
+            return "\"." + parts[^1] + "\"";
+        }
+
+        private static async Task<StorageFolder> getFolder(string path)
+        {
+            path = path.Replace("/", "\\");
+            if (path.Contains('@'))
+            {
+                path = path.Replace("@", "Assets\\oozaru\\dist");
+                return await Package.Current.InstalledLocation.GetFolderAsync(path);
+            }
+            else
+            {
+                path = path.Replace("~/", "").Replace("~", "");
+                return path == "" ? ApplicationData.Current.LocalFolder : await ApplicationData.Current.LocalFolder.GetFolderAsync(path);
+            }
         }
 
         private void Grid_KeyDown(object sender, KeyRoutedEventArgs e)
