@@ -1001,6 +1001,16 @@ class Texture
 		return this.#width;
 	}
 
+	clear(color = Color.fromRGBA(0, 0, 0, 0))
+	{
+		gl.bindTexture(gl.TEXTURE_2D, this.#glTexture);
+		const pixels = new Uint32Array(this.width * this.height);
+		pixels.fill((color.a * 255 << 24) + (color.b * 255 << 16) + (color.g * 255 << 8) + (color.r * 255))
+		gl.texImage2D(gl.TEXTURE_2D,
+			0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+			new Uint8Array(pixels.buffer));
+	}
+
 	upload(content, x = 0, y = 0, width = this.width, height = this.height)
 	{
 		const pixelData = ArrayBuffer.isView(content)
