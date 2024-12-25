@@ -101,11 +101,24 @@ class Mixer
 		this.#parent = value
 	}
 
+	get audioContext()
+	{
+		return this.#audioContext
+	}
+
 	attachAudio(audioElement)
 	{
 		const audioNode = this.#audioContext.createMediaElementSource(audioElement);
 		audioNode.connect(this.#gainNode);
 		return audioNode;
+	}
+
+	attachBuffer(audioBuffer)
+	{
+		const audioNode = this.#audioContext.createBufferSource();
+		audioNode.buffer = audioBuffer;
+		audioNode.connect(this.#audioContext.destination);
+		return audioNode
 	}
 
 	attachScript(numChannels, callback)
@@ -247,6 +260,58 @@ class Sound
 	{
 		this.#audioElement.pause();
 		this.#audioElement.currentTime = 0.0;
+	}
+}
+
+export
+class Sample
+{
+	#filename;
+	#audioBuffer;
+
+	static async fromFile(fileName)
+	{
+		const data = await fetch(Game.urlOf(fileName))
+		const arrayBuffer = await data.arrayBuffer()
+		const audioBuffer = await Mixer.Default.audioContext.decodeAudioData(arrayBuffer)
+
+		let sample = new Sample(audioBuffer)
+		sample.#filename = Game.fullPath(fileName)
+		return sample
+	}
+	constructor(source) { this.#audioBuffer = source }
+	get fileName() { return this.#filename }
+	play(mixer = Mixer.Default, options = {})
+	{
+		return new SampleInstance (
+			this.#audioBuffer,
+			mixer,
+			options
+		)
+	}
+}
+
+export
+class SampleInstance
+{
+	#audioNode;
+
+	constructor(source, mixer, options)
+	{
+		if (source instanceof AudioBuffer)
+		{
+			this.#audioNode = mixer.attachBuffer(source)
+			if ("speed" in options) this.#audioNode.playbackRate = options.speed
+			if ("loop" in options) this.#audioNode.loop = options.loop
+			if ("pan" in options) this.#audioNode.connect(new StereoPannerNode(mixer.audioContext, { pan: options.pan }))
+			if ("volume" in options) this.#audioNode.connect(new GainNode(mixer.audioContext, { gain: options.volume }))
+			this.#audioNode.start()
+		}
+	}
+
+	stop()
+	{
+		this.#audioNode.stop()
 	}
 }
 
