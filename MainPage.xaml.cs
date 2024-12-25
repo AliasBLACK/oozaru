@@ -19,6 +19,8 @@ using System.Runtime.InteropServices;
 using Windows.UI.ViewManagement;
 using Windows.Gaming.Input;
 using Windows.System;
+using Windows.Storage;
+using Windows.ApplicationModel;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Text;
 
@@ -190,6 +192,17 @@ namespace OozaruXbox
                     result += "]";
                     WebView2.CoreWebView2.ExecuteScriptAsync("DirectoryHelperDropbox[\"" + msg + "\"](" + result + ")");
                 }
+
+                // File.Exists
+                else if (msg.Contains("FileExistsHelper:"))
+                {
+                    msg = msg.Replace("FileExistsHelper:", "");
+                    StorageFolder folder = await getFolder(Path.GetDirectoryName(msg));
+                    bool result = await folder.TryGetItemAsync(Path.GetFileName(msg)) != null;
+                    WebView2.CoreWebView2.ExecuteScriptAsync("FileExistsHelperDropbox[\"" + msg + "\"](" + (result ? "true" : "false") + ")");
+                }
+
+                // Debug print.
                 else Debug.WriteLine(msg.Replace("http://oozaru", "Assets/oozaru"));
             };
 

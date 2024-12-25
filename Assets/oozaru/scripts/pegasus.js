@@ -59,6 +59,9 @@ const FileOp =
 
 // Dropboxes for interop with C#.
 globalThis.DirectoryHelperDropbox = {};
+globalThis.FileExistsHelperDropbox = {};
+globalThis.FileSaveHelperDropbox = {};
+
 const console = globalThis.console;
 
 var mainObject;
@@ -232,7 +235,15 @@ class File
 {
 	static async exists(fileName)
 	{
-		throw Error(`'File.exists' is not implemented`);
+		return new Promise(resolve => {
+			return new Promise(fileExistHelperPromise => {
+				FileExistsHelperDropbox[fileName] = fileExistHelperPromise
+				print("FileExistsHelper:" + fileName)
+			}).then(result => {
+				delete FileExistsHelperDropbox[fileName]
+				resolve(result)
+			})
+		})
 	}
 
 	static async load(fileName, dataType = DataType.Text)
