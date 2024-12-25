@@ -25,6 +25,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Text;
 using ABI.System;
 using Windows.Graphics.Display;
+using System.Text.RegularExpressions;
+using Windows.UI.Core;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -257,18 +259,13 @@ namespace OozaruXbox
         {
             if (_ready && !System.Char.IsControl(args.Character))
             {
-                var JSString = "";
                 var JSChar = ConvertStringToJS(args.Character);
                 if (JSChar != null)
-                    JSString += @"
+                    WebView2.CoreWebView2.ExecuteScriptAsync(@"
                         document.getElementById(""screen"").dispatchEvent(
                             new KeyboardEvent(""keydown"", { code: """ + JSChar + @""" })
                         )
-                    ";
-                WebView2.CoreWebView2.ExecuteScriptAsync(
-                    JSString + 
-                    "charQueue.push('" + (args.Character == '\'' ? "\\" : "") + args.Character + "')"
-                );
+                    ");
             }
         }
     }

@@ -7,9 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    KeyDown="Grid_KeyDown"
+    CharacterReceived="Grid_CharacterReceived">
 
-    <Grid KeyDown="Grid_KeyDown" CharacterReceived="Grid_CharacterReceived">
+    <Grid>
         <controls:WebView2 x:Name="WebView2" Source="_blank"/>
     </Grid>
 </Page>
