@@ -30,7 +30,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
 **/
 
-import { Mixer, Sound, SoundStream } from './audialis.js';
+import { Mixer, Sample, SampleInstance, Sound, SoundStream } from './audialis.js';
 import { DataStream } from './data-stream.js';
 import Fido from './fido.js';
 import { Font } from './fontso.js';
@@ -97,6 +97,8 @@ class Pegasus
 			Shader,
 			Shape,
 			Sound,
+			Sample,
+			SampleInstance,
 			SoundStream,
 			Surface,
 			Texture,
