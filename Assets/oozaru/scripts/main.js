@@ -52,6 +52,7 @@ async function main()
 	// use event handling to intercept errors originating inside the Sphere sandbox, rather than a
 	// try-catch.  otherwise the debugger thinks the error is handled and doesn't do a breakpoint,
 	// making diagnosing bugs in the engine harder than necessary.
+	globalThis.global = globalThis
 	window.addEventListener('error', (e) => {
 		reportException(e.error)
 	})
