@@ -23,6 +23,8 @@ using Windows.Storage;
 using Windows.ApplicationModel;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Text;
+using ABI.System;
+using Windows.Graphics.Display;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -147,6 +149,11 @@ namespace OozaruXbox
         {
             // Wait for initialization.
             await WebView2.EnsureCoreWebView2Async();
+
+            // Send window resolution to Javascript.
+            var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
+            var scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+            WebView2.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("globalThis.desktopResolution = { width: " + (bounds.Width * scaleFactor).ToString() + ", height: " + (bounds.Height * scaleFactor).ToString() + " }");
 
             // Map oozaru folder to hostname.
             WebView2.CoreWebView2.SetVirtualHostNameToFolderMapping(

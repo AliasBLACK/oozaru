@@ -221,6 +221,11 @@ class Sphere
 	{
 		Galileo.rerez(width, height);
 	}
+
+	static get desktopResolution()
+	{
+		return desktopResolution
+	}
 }
 
 class FS
