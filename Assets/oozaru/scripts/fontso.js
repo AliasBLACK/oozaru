@@ -50,7 +50,7 @@ export
 class Font
 {
 	#fileName;
-	#glyphAtlas;
+	#glyphAtlas = [];
 	#glyphData = {};
 	#lineHeight = 0;
 
@@ -61,7 +61,7 @@ class Font
 
 	static async fromFile(...args)
 	{
-		const fileName = args.length > 1 ? `${args[0].split(".")[0]}_${args[1]}.fnt` : args[0];
+		const fileName = args.length > 1 ? `${args[0].split(".")[0]}-${args[1]}.fnt` : args[0];
 		const fontURL = Game.urlOf(fileName);
 		let data = await Fido.fetchText(fontURL);
 		data = parseBMFont(data);
@@ -71,6 +71,11 @@ class Font
 		font.#lineHeight = data.common.lineHeight;
 		font.#fileName = Game.fullPath(fileName);
 
+		// Load texture.
+		let folder = fileName.substring(0, fileName.lastIndexOf("/") + 1) || ""
+		for (const page of data.pages)
+			font.#glyphAtlas.push(await Texture.fromFile(`${folder}${page}`));
+
 		// Transcribe bmfont data.
 		for (const glyph of data.chars)
 			font.#glyphData[glyph.id] = {
@@ -79,17 +84,19 @@ class Font
 				xOffset: glyph.xoffset,
 				yOffset: glyph.yoffset,
 				xAdvance: glyph.xadvance,
-				u: glyph.x / data.common.scaleW,
-				v: 1.0 - glyph.y / data.common.scaleH,
-				u2: glyph.width / data.common.scaleW,
-				v2: glyph.height / data.common.scaleH
+				atlasIndex: glyph.page,
+				u: glyph.x / font.#glyphAtlas[glyph.page].width,
+				v: 1.0 - glyph.y / font.#glyphAtlas[glyph.page].height,
+				u2: glyph.width / font.#glyphAtlas[glyph.page].width,
+				v2: glyph.height / font.#glyphAtlas[glyph.page].height
 			};
-
-		// Load texture.
-		font.#glyphAtlas = await Texture.fromFile(`#/${data.pages[0]}`);
 		
 		// Return font.
 		return font;
+	}
+	get glyphAtlas()
+	{
+		return this.#glyphAtlas
 	}
 
 	get fileName()
@@ -142,7 +149,9 @@ class Font
 		for (let ptr = 0; ptr < text.length; ptr++)
 		{
 			const cp = text.charCodeAt(ptr)
-			width += this.#glyphData[cp].width;
+			if (cp == 13) continue
+			if (!this.#glyphData[cp]) print(this.#fileName + ", " + text[ptr] + " (" + cp + "), " + text)
+			width += this.#glyphData[cp].xAdvance;
 		}
 		return width;
 	}
@@ -174,12 +183,13 @@ class Font
 					break;
 				case 32:  // space
 					codepoints.push(cp);
-					wordWidth += glyph.width;
+					wordWidth += glyph.xAdvance;
 					wordFinished = true;
 					break;
 				default:
 					codepoints.push(cp);
-					wordWidth += glyph.width;
+					if (!glyph) print(this.#fileName + ", " + text[ptr] + ", " + text)
+					wordWidth += glyph.xAdvance;
 					break;
 			}
 			if (wordFinished || lineFinished) {
@@ -209,10 +219,11 @@ class Font
         if (text === "")
 			return;  // empty string, nothing to render
 		let xOffset = 0;
-		const vertices = [];
+		let vertices = {};
 		for (let ptr = 0; ptr < text.length; ptr++)
 		{
 			const cp = text.charCodeAt(ptr)
+			if (cp == 13) continue
 			const glyph = this.#glyphData[cp];
 			const x1 = x + xOffset + glyph.xOffset, x2 = x1 + glyph.width;
 			const y1 = y + glyph.yOffset, y2 = y1 + glyph.height;
@@ -220,7 +231,8 @@ class Font
 			const u2 = u1 + glyph.u2;
 			const v1 = glyph.v;
 			const v2 = v1 - glyph.v2;
-			vertices.push(
+			vertices[glyph.atlasIndex] = vertices[glyph.atlasIndex] || []
+			vertices[glyph.atlasIndex].push(
 				{ x: x1, y: y1, u: u1, v: v1, color },
 				{ x: x2, y: y1, u: u2, v: v1, color },
 				{ x: x1, y: y2, u: u1, v: v2, color },
@@ -230,38 +242,7 @@ class Font
 			);
 			xOffset += glyph.xAdvance;
 		}
-        Shape.drawImmediate(surface, ShapeType.Triangles, this.#glyphAtlas, vertices);
+		for (const atlasIndex of Object.keys(vertices))
+        	Shape.drawImmediate(surface, ShapeType.Triangles, this.#glyphAtlas[atlasIndex], vertices[atlasIndex]);
 	}
-}
-
-function toCP1252(codepoint)
-{
-	return codepoint == 0x20AC ? 128
-		: codepoint == 0x201A ? 130
-		: codepoint == 0x0192 ? 131
-		: codepoint == 0x201E ? 132
-		: codepoint == 0x2026 ? 133
-		: codepoint == 0x2020 ? 134
-		: codepoint == 0x2021 ? 135
-		: codepoint == 0x02C6 ? 136
-		: codepoint == 0x2030 ? 137
-		: codepoint == 0x0160 ? 138
-		: codepoint == 0x2039 ? 139
-		: codepoint == 0x0152 ? 140
-		: codepoint == 0x017D ? 142
-		: codepoint == 0x2018 ? 145
-		: codepoint == 0x2019 ? 146
-		: codepoint == 0x201C ? 147
-		: codepoint == 0x201D ? 148
-		: codepoint == 0x2022 ? 149
-		: codepoint == 0x2013 ? 150
-		: codepoint == 0x2014 ? 151
-		: codepoint == 0x02DC ? 152
-		: codepoint == 0x2122 ? 153
-		: codepoint == 0x0161 ? 154
-		: codepoint == 0x203A ? 155
-		: codepoint == 0x0153 ? 156
-		: codepoint == 0x017E ? 158
-		: codepoint == 0x0178 ? 159
-		: codepoint;
 }
