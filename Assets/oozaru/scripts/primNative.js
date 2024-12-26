@@ -85,7 +85,7 @@ class PrimNative
 		for (let i = angle1; i < angle2; i += increment)
 		{
 			vertices.push({ x: x + Math.cos(i) * rx, y: y - Math.sin(i) * ry, color: color })
-			if (thickness > 0) vertices.push({ x: x + Math.cos(angle2) * (rx - thickness), y: y - Math.sin(angle2) * (ry - thickness), color: color })
+			if (thickness > 0) vertices.push({ x: x + Math.cos(i) * (rx - thickness), y: y - Math.sin(i) * (ry - thickness), color: color })
 		}
 		vertices.push({ x: x + Math.cos(angle2) * rx, y: y - Math.sin(angle2) * ry, color: color })
 		if (thickness > 0) vertices.push({ x: x + Math.cos(angle2) * (rx - thickness), y: y - Math.sin(angle2) * (ry - thickness), color: color })
