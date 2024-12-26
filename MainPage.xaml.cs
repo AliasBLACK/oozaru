@@ -166,6 +166,13 @@ namespace OozaruXbox
                 accessKind: CoreWebView2HostResourceAccessKind.Allow
             );
 
+            // Map user folder to subdomain.
+            WebView2.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                hostName: "userFolder.oozaru",
+                folderPath: ApplicationData.Current.LocalFolder.Path,
+                accessKind: CoreWebView2HostResourceAccessKind.Allow
+            );
+
             // Handle messages received from WebView2.
             WebView2.CoreWebView2.WebMessageReceived += async (s, e) =>
             {

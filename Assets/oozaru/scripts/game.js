@@ -125,6 +125,10 @@ class Game
 			hops.splice(0, 1);
 			return `${this.rootPath}/${hops.join('/')}`;
 		}
+		else if (hops[0] === '~') {
+			hops.splice(0, 1);
+			return `https://userFolder.oozaru/${hops.join("/")}`;
+		}
 		else if (hops[0] === '#') {
 			hops.splice(0, 1);
 			return `assets/${hops.join('/')}`;
