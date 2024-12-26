@@ -245,9 +245,13 @@ class Sound
 		this.#audioElement.pause();
 	}
 
-	play(mixer = Mixer.Default)
+	play(mixer)
 	{
-		if (mixer !== this.#currentMixer) {
+		if (!mixer)
+		{
+			if (!this.#currentMixer) mixer = Mixer.Default
+		}
+		else if (mixer !== this.#currentMixer) {
 			this.#currentMixer = mixer;
 			if (this.#audioNode !== null)
 				this.#audioNode.disconnect();
