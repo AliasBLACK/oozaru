@@ -46,11 +46,11 @@ class PrimNative
 	static drawRoundedRectangle(surface, x1, y1, x2, y2, rx, ry, thickness, color)
 	{
 		let vertices = [
-			...this.getArcCoords(x2 - rx, y2 - ry, rx, ry, -Math.PI / 2, 0, thickness, color),
+			...this.getArcCoords(x2 - rx, y1 + ry, rx, ry, 0, Math.PI / 2, thickness, color),
 			...this.getArcCoords(x1 + rx, y1 + ry, rx, ry, Math.PI * .5, Math.PI, thickness, color),
 			...this.getArcCoords(x1 + rx, y2 - ry, rx, ry, Math.PI, Math.PI * 1.5, thickness, color),
-			...this.getArcCoords(x2 - rx, y1 + ry, rx, ry, 0, Math.PI / 2, thickness, color),
-			...this.getArcCoords(x2 - rx, y2 - ry, rx, ry, -Math.PI / 2, 0, thickness, color).slice(0, 2)
+			...this.getArcCoords(x2 - rx, y2 - ry, rx, ry, -Math.PI / 2, 0, thickness, color),
+			...this.getArcCoords(x2 - rx, y1 + ry, rx, ry, 0, Math.PI / 2, thickness, color).slice(0, 2)
 		]
 		Shape.drawImmediate(surface, ShapeType.TriStrip, vertices)
 	}
