@@ -7,26 +7,14 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using System.Runtime.InteropServices;
 using Windows.UI.ViewManagement;
-using Windows.Gaming.Input;
 using Windows.System;
 using Windows.Storage;
 using Windows.ApplicationModel;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Text;
-using ABI.System;
 using Windows.Graphics.Display;
-using System.Text.RegularExpressions;
-using Windows.UI.Core;
 using Windows.Security.Cryptography;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
