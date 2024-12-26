@@ -137,6 +137,7 @@ namespace OozaruXbox
             //ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
             ApplicationView.PreferredLaunchViewSize = new Size(1920, 1080);
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+            ApplicationView.GetForCurrentView().SetDesiredBoundsMode(ApplicationViewBoundsMode.UseCoreWindow);
             Environment.SetEnvironmentVariable(
                 variable: "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
                 value: "--autoplay-policy=no-user-gesture-required"
