@@ -300,7 +300,15 @@ class File
 
 	static async save(fileName, data)
 	{
-		throw Error(`'File.save' is not implemented`);
+		return new Promise(resolve => {
+			return new Promise(FileSaveHelperPromise => {
+				FileSaveHelperDropbox[fileName] = FileSaveHelperPromise
+				print("FileSaveHelper:" + fileName + " " + data.join("|"))
+			}).then(() => {
+				delete FileSaveHelperDropbox[fileName]
+				resolve()
+			})
+		})
 	}
 }
 

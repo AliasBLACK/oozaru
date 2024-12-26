@@ -27,6 +27,7 @@ using ABI.System;
 using Windows.Graphics.Display;
 using System.Text.RegularExpressions;
 using Windows.UI.Core;
+using Windows.Security.Cryptography;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -210,6 +211,17 @@ namespace OozaruXbox
                     StorageFolder folder = await getFolder(Path.GetDirectoryName(msg));
                     bool result = await folder.TryGetItemAsync(Path.GetFileName(msg)) != null;
                     WebView2.CoreWebView2.ExecuteScriptAsync("FileExistsHelperDropbox[\"" + msg + "\"](" + (result ? "true" : "false") + ")");
+                }
+
+                // File.Save
+                else if (msg.Contains("FileSaveHelper:"))
+                {
+                    string[] parts = msg.Replace("FileSaveHelper:", "").Split(" ");
+                    StorageFolder folder = await getFolder(Path.GetDirectoryName(parts[0]));
+                    StorageFile file = await folder.CreateFileAsync(Path.GetFileName(parts[0]), CreationCollisionOption.ReplaceExisting);
+                    byte[] data = parts[1].Split("|").Select(str => byte.Parse(str)).ToArray();
+                    await FileIO.WriteBufferAsync(file, CryptographicBuffer.CreateFromByteArray(data));
+                    WebView2.CoreWebView2.ExecuteScriptAsync("FileSaveHelperDropbox[\"" + parts[0] + "\"]()");
                 }
 
                 // Debug print.
