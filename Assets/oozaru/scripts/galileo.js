@@ -1238,7 +1238,7 @@ class Transform
 		return transform;
 	}
 
-	static rotate(angle, vX, vY, vZ)
+	static rotate(angle, vX = 0, vY = 0, vZ = 1)
 	{
 		// normalize the rotation axis vector
 		const norm = Math.sqrt(vX * vX + vY * vY + vZ * vZ);
