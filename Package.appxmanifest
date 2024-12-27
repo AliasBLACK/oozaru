@@ -7,14 +7,14 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="a538777c-3a5a-4ea0-8c04-57638da60521"
+    Name="2dfcea27-1182-404a-8844-3dc3f4ad22cb"
     Publisher="CN=xm"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="a538777c-3a5a-4ea0-8c04-57638da60521" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="2dfcea27-1182-404a-8844-3dc3f4ad22cb" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>GlyphicaXbox</DisplayName>
+    <DisplayName>OozaruXbox</DisplayName>
     <PublisherDisplayName>xm</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -30,12 +30,12 @@
   <Applications>
     <Application Id="App"
       Executable="$targetnametoken$.exe"
-      EntryPoint="GlyphicaXbox.App">
+      EntryPoint="OozaruXbox.App">
       <uap:VisualElements
-        DisplayName="GlyphicaXbox"
+        DisplayName="OozaruXbox"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="GlyphicaXbox"
+        Description="OozaruXbox"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />

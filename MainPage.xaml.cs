@@ -1,4 +1,5 @@
 ﻿using Microsoft.Web.WebView2.Core;
+using Microsoft.Xbox.Services;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -190,11 +191,13 @@ namespace OozaruXbox
                         result += "{";
                         result += "isDirectory:" + (item.Name.Contains('.') ? "false" : "true") + ',';
                         result += "fileName:\"" + item.Name + "\",";
-                        result += "fullPath:\"" + msg.TrimEnd(['/']) + "/" + item.Name + "\",";
+                        char[] trailingSlash = { '/' };
+                        result += "fullPath:\"" + msg.TrimEnd(trailingSlash) + "/" + item.Name + "\",";
                         result += "extension:" + getExtension(item.Name);
                         result += "},";
                     }
-                    result = result.TrimEnd([',']);
+                    char[] trailingComma = { ',' };
+                    result = result.TrimEnd(trailingComma);
                     result += "]";
                     WebView2.CoreWebView2.ExecuteScriptAsync("DirectoryHelperDropbox[\"" + msg + "\"](" + result + ")");
                 }
@@ -235,7 +238,7 @@ namespace OozaruXbox
         {
             if (!path.Contains('.')) return null;
             string[] parts = path.Split('.');
-            return "\"." + parts[^1] + "\"";
+            return "\"." + parts[parts.Length - 1] + "\"";
         }
 
         private static async Task<StorageFolder> getFolder(string path)
