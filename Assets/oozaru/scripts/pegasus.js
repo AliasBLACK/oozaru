@@ -210,6 +210,11 @@ class Sphere
 		return JobQueue.now();
 	}
 
+	static shutDown()
+	{
+		print("ShutdownHelper")
+	}
+
 	static sleep(numFrames)
 	{
 		return new Promise((resolve) => {

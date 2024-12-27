@@ -219,6 +219,10 @@ namespace OozaruXbox
                     WebView2.CoreWebView2.ExecuteScriptAsync("FileSaveHelperDropbox[\"" + parts[0] + "\"]()");
                 }
 
+                // Shutdown
+                else if (msg == "ShutdownHelper")
+                    ApplicationView.GetForCurrentView().TryConsolidateAsync();
+
                 // Debug print.
                 else Debug.WriteLine(msg.Replace("http://oozaru", "Assets/oozaru"));
             };
