@@ -260,7 +260,7 @@ namespace OozaruXbox
         {
             if (_ready)
             {
-                var JSChar = ConvertVirtualKeyToJS(e.Key);
+                var JSChar = ConvertVirtualKeyToJS(e.OriginalKey);
                 if (JSChar != null)
                     WebView2.CoreWebView2.ExecuteScriptAsync(@"
                         document.getElementById(""screen"").dispatchEvent(
