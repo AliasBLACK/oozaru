@@ -132,6 +132,10 @@ namespace OozaruXbox
                 variable: "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
                 value: "--autoplay-policy=no-user-gesture-required"
             );
+            Environment.SetEnvironmentVariable(
+                variable: "WEBVIEW2_DEFAULT_BACKGROUND_COLOR",
+                value: "000"
+            );
             InitializeComponent();
 
             #pragma warning disable 4014
