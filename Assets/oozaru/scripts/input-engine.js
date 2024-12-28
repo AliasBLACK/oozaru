@@ -328,49 +328,84 @@ class InputEngine
 		});
 
 		nullJoystick = new Joystick();
+		window.addEventListener("gamepadconnected", (e) => {
+			if (e.gamepad.index < Joystick.Joysticks.length)
+				Joystick.Joysticks[e.gamepad.index] = new Joystick(e.gamepad.index);
+		});
+		window.addEventListener("gamepaddisconnected", (e) => {
+			if (e.gamepad.index < Joystick.Joysticks.length)
+				Joystick.Joysticks[e.gamepad.index] = nullJoystick;
+		});
 	}
 }
 
 export
 class Joystick
 {
-	static get P1() { return nullJoystick; }
-	static get P2() { return nullJoystick; }
-	static get P3() { return nullJoystick; }
-	static get P4() { return nullJoystick; }
+	#index;
 
-	static getDevices()
+	static Joysticks = Array(4).fill(nullJoystick);
+	static get P1() { return this.Joysticks[0]; }
+	static get P2() { return this.Joysticks[1]; }
+	static get P3() { return this.Joysticks[2]; }
+	static get P4() { return this.Joysticks[3]; }
+	static getDevices() { return this.Joysticks; }
+
+	static ButtonMapper(buttonID)
 	{
-		return [];
+		switch(buttonID)
+		{
+			case 10: return 15;
+			case 11: return 14;
+			case 12: return 13;
+			case 13: return 12;
+			case 4: return 5;
+			case 5: return 4;
+			case 6: return 11;
+			case 7: return 10;
+			default: return buttonID;
+		}
 	}
 
-	constructor()
+	constructor(index)
 	{
+		print("New Joystick connected: " + index)
+		this.#index = index;
 	}
 
 	get name()
 	{
-		return "Null Device";
+		if (this.#index == null) return "Null Device";
+		return navigator.getGamepads()[this.#index].id;
 	}
 
 	get numAxes()
 	{
-		return Infinity;
+		if (this.#index == null) return Infinity;
+		return navigator.getGamepads()[this.#index].axes.length;
 	}
 
 	get numButtons()
 	{
-		return Infinity;
+		if (this.#index == null) return Infinity;
+		return navigator.getGamepads()[this.#index].buttons.length;
 	}
 
 	getPosition(axisID)
 	{
-		return 0.0;
+		if (this.#index == null) return 0.0;
+		return axisID == 4 ?
+			navigator.getGamepads()[this.#index].buttons[6].value
+			: axisID == 5 ?
+				navigator.getGamepads()[this.#index].buttons[7].value
+				: navigator.getGamepads()[this.#index].axes[axisID];
 	}
 
 	isPressed(buttonID)
 	{
-		return false;
+		if (this.#index == null) return false;
+		buttonID = this.constructor.ButtonMapper(buttonID)
+		return navigator.getGamepads()[this.#index].buttons[buttonID].pressed;
 	}
 }
 
