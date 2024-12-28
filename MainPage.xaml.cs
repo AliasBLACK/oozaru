@@ -288,7 +288,7 @@ namespace OozaruXbox
         {
             if (_ready && !System.Char.IsControl(args.Character))
             {
-                var JSChar = ConvertStringToJS(args.Character);
+                var JSChar = ConvertStringToJS(Char.ToLower(args.Character));
                 if (JSChar != null)
                     WebView2.CoreWebView2.ExecuteScriptAsync(@"
                         document.getElementById(""screen"").dispatchEvent(
