@@ -270,6 +270,20 @@ namespace OozaruXbox
             }
         }
 
+        private void Grid_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (_ready)
+            {
+                var JSChar = ConvertVirtualKeyToJS(e.OriginalKey);
+                if (JSChar != null)
+                    WebView2.CoreWebView2.ExecuteScriptAsync(@"
+                        document.getElementById(""screen"").dispatchEvent(
+                            new KeyboardEvent(""keyup"", { code: """ + JSChar + @""" })
+                        )
+                    ");
+            }
+        }
+
         private void Grid_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)
         {
             if (_ready && !System.Char.IsControl(args.Character))
