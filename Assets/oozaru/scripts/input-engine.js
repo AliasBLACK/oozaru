@@ -267,12 +267,14 @@ class InputEngine
 		canvas.addEventListener('keydown', (e) => {
 			e.preventDefault();
 			keyStates[e.code] = true;
+
+			// Push to keyQueue.
 			const code = keyCode[e.code]
 			keyQueue.push(code)
-			charQueue.push(
-				Keyboard.Default.charOf(code),
-				Keyboard.Default.isPressed(Key.LShift) || Keyboard.Default.isPressed(Key.RShift)
-			)
+
+			// Push to charQueue.
+			const char = Keyboard.Default.charOf(code, Keyboard.Default.isPressed(Key.LShift) || Keyboard.Default.isPressed(Key.RShift))
+			if (char != "")  charQueue.push(char)
 		});
 		canvas.addEventListener('keyup', e => {
 			e.preventDefault();
